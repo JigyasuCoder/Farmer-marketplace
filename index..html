@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mandipaye — Direct Agricultural Sourcing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-900 antialiased min-h-screen flex flex-col">
+
+    <!-- HEADER -->
+    <header class="bg-white border-b border-stone-200 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="bg-emerald-700 text-white p-2 rounded-xl">
+                    <i data-lucide="sprout" class="w-5 h-5"></i>
+                </div>
+                <span class="text-xl font-bold tracking-tight">Mandipaye</span>
+                <span class="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-amber-200">Bulk Sourcing</span>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div id="userBadge" class="hidden items-center gap-2 text-xs font-medium text-stone-600 bg-stone-100 px-3 py-1.5 rounded-full border border-stone-200">
+                    <i data-lucide="user-check" class="w-4 h-4 text-emerald-600"></i>
+                    <span id="userPhoneDisplay"></span>
+                </div>
+                <button onclick="alert('Cart feature opening...')" class="relative p-2.5 text-stone-700 hover:bg-stone-100 rounded-xl border border-stone-200 bg-white">
+                    <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                    <span id="cartBadge" class="absolute -top-1 -right-1 bg-emerald-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8">
+
+        <!-- AUTHENTICATION CARD -->
+        <section id="authSection" class="max-w-md mx-auto my-12 bg-white p-8 rounded-2xl border border-stone-200 shadow-sm">
+            <div class="flex justify-center mb-6 border-b border-stone-200 pb-3 gap-8">
+                <button id="tabSignin" onclick="switchTab('signin')" class="font-bold text-emerald-700 border-b-2 border-emerald-700 pb-2">Sign In</button>
+                <button id="tabSignup" onclick="switchTab('signup')" class="font-bold text-stone-400 pb-2">Sign Up</button>
+            </div>
+
+            <!-- SIGN IN FORM -->
+            <form id="signinForm" onsubmit="handleSignin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Mobile Number</label>
+                    <input type="tel" id="signinPhone" required pattern="[0-9]{10}" placeholder="9876543210" class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Password</label>
+                    <input type="password" id="signinPassword" required placeholder="••••••••" class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+                </div>
+                <button type="submit" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-2.5 rounded-xl text-sm transition">Sign In</button>
+            </form>
+
+            <!-- SIGN UP FORM -->
+            <form id="signupForm" onsubmit="handleSignup(event)" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Mobile Number</label>
+                    <input type="tel" id="signupPhone" required pattern="[0-9]{10}" placeholder="9876543210" class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Set Password</label>
+                    <input type="password" id="signupPassword" required minlength="6" placeholder="At least 6 characters" class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+                </div>
+                <button type="submit" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-2.5 rounded-xl text-sm transition">Register & Send OTP</button>
+            </form>
+
+            <!-- OTP VERIFICATION FORM -->
+            <form id="otpForm" onsubmit="handleVerifyOTP(event)" class="space-y-4 hidden">
+                <div class="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-xl">
+                    Enter the 6-digit verification code sent for <strong id="otpPhoneText"></strong>.
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Enter OTP Code</label>
+                    <input type="text" id="otpCode" required pattern="[0-9]{6}" placeholder="123456" class="w-full px-4 py-2.5 text-center text-lg font-bold tracking-widest border border-stone-200 rounded-xl focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+                </div>
+                <button type="submit" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-2.5 rounded-xl text-sm transition">Verify Mobile & Proceed</button>
+            </form>
+        </section>
+
+        <!-- MARKETPLACE CATALOG SECTION -->
+        <section id="marketplaceSection" class="hidden space-y-6">
+            <div class="flex justify-between items-center border-b border-stone-200 pb-4">
+                <div>
+                    <h2 class="text-xl font-bold text-stone-900">Direct Farm Produce</h2>
+                    <p class="text-xs text-stone-500">Bulk verified listings with mandatory minimum order limits.</p>
+                </div>
+                <button onclick="loadProduceCatalog()" class="text-xs text-emerald-700 font-semibold hover:underline flex items-center gap-1">
+                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh Catalog
+                </button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="catalogGrid"></div>
+        </section>
+
+    </main>
+
+    <script>
+        // Set your live deployed Render API URL here
+        const API_BASE_URL = "https://YOUR-RENDER-API-NAME.onrender.com";
+
+        let currentAuthPhone = "";
+
+        function switchTab(tab) {
+            if (tab === 'signin') {
+                document.getElementById('signinForm').classList.remove('hidden');
+                document.getElementById('signupForm').classList.add('hidden');
+                document.getElementById('otpForm').classList.add('hidden');
+                document.getElementById('tabSignin').className = "font-bold text-emerald-700 border-b-2 border-emerald-700 pb-2";
+                document.getElementById('tabSignup').className = "font-bold text-stone-400 pb-2";
+            } else {
+                document.getElementById('signinForm').classList.add('hidden');
+                document.getElementById('signupForm').classList.remove('hidden');
+                document.getElementById('otpForm').classList.add('hidden');
+                document.getElementById('tabSignup').className = "font-bold text-emerald-700 border-b-2 border-emerald-700 pb-2";
+                document.getElementById('tabSignin').className = "font-bold text-stone-400 pb-2";
+            }
+        }
+
+        async function handleSignup(e) {
+            e.preventDefault();
+            currentAuthPhone = document.getElementById('signupPhone').value;
+            const password = document.getElementById('signupPassword').value;
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/auth/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone_number: currentAuthPhone, password: password })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert(`Demo OTP Generated: ${data.demo_otp}`);
+                    document.getElementById('signupForm').classList.add('hidden');
+                    document.getElementById('otpForm').classList.remove('hidden');
+                    document.getElementById('otpPhoneText').innerText = `+91 ${currentAuthPhone}`;
+                } else {
+                    alert(data.detail || "Signup failed. Please try again.");
+                }
+            } catch (err) {
+                alert("Unable to reach backend server. Verify your Render backend is running.");
+            }
+        }
+
+        async function handleVerifyOTP(e) {
+            e.preventDefault();
+            const otp = document.getElementById('otpCode').value;
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/auth/verify-otp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone_number: currentAuthPhone, otp: otp })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert(data.message);
+                    switchTab('signin');
+                } else {
+                    alert(data.detail || "OTP verification failed.");
+                }
+            } catch (err) {
+                alert("Server error during verification.");
+            }
+        }
+
+        async function handleSignin(e) {
+            e.preventDefault();
+            const phone = document.getElementById('signinPhone').value;
+            const password = document.getElementById('signinPassword').value;
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/auth/signin`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone_number: phone, password: password })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    document.getElementById('userPhoneDisplay').innerText = `+91 ${data.user.phone_number}`;
+                    document.getElementById('userBadge').classList.remove('hidden');
+                    document.getElementById('userBadge').classList.add('flex');
+                    document.getElementById('authSection').classList.add('hidden');
+                    document.getElementById('marketplaceSection').classList.remove('hidden');
+                    loadProduceCatalog();
+                } else {
+                    alert(data.detail || "Sign in failed.");
+                }
+            } catch (err) {
+                alert("Unable to connect to the authentication server.");
+            }
+        }
+
+        async function loadProduceCatalog() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/listings?mode=bulk_buyer`);
+                const listings = await res.json();
+                const grid = document.getElementById('catalogGrid');
+                
+                if (listings.length === 0) {
+                    grid.innerHTML = `<div class="col-span-full text-center py-12 text-stone-400 text-sm">No wholesale listings available right now.</div>`;
+                    return;
+                }
+
+                grid.innerHTML = listings.map(item => `
+                    <div class="bg-white rounded-2xl border border-stone-200 overflow-hidden p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-bold text-stone-900 text-base">${item.title}</h3>
+                                <span class="text-[10px] bg-stone-100 text-stone-600 px-2 py-0.5 rounded font-medium">${item.category}</span>
+                            </div>
+                            <p class="text-xs text-stone-500 mb-4">Location Pincode: ${item.pincode}</p>
+                        </div>
+                        <div class="pt-4 border-t border-stone-100 flex items-center justify-between">
+                            <div>
+                                <span class="text-lg font-bold text-emerald-700">₹${item.price_per_kg}</span><span class="text-xs text-stone-500">/kg</span>
+                                <span class="text-[10px] block text-stone-400">Min. Order: ${item.moq_kg} kg</span>
+                            </div>
+                            <button onclick="alert('Proceeding to bulk order...')" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs px-3.5 py-2 rounded-xl font-semibold transition">Order Bulk</button>
+                        </div>
+                    </div>
+                `).join('');
+                lucide.createIcons();
+            } catch (err) {
+                console.error("Error loading catalog:", err);
+            }
+        }
+
+        lucide.createIcons();
+    </script>
+</body>
+</html>
