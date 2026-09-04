@@ -12,11 +12,16 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = FastAPI(title="Mandipaye B2B Wholesale Marketplace API")
+origins = [
+    "https://jigyasucoder.github.io",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
 
 # --- 1. ALLOW CORS FOR GITHUB PAGES & LOCAL DEV ---
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows requests from GitHub Pages, localhost, and Render
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
